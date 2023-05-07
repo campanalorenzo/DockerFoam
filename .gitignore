@@ -41,3 +41,5 @@
 */processor*
 */VTK
 */constant/polyMesh
+*/*[1-9]*
+
