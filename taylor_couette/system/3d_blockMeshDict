@@ -1,0 +1,175 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  9
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+convertToMeters 1;
+
+ri 0.8; // inner radius
+ro 1.0; // outer radius
+
+pi 3.14159265359;
+
+h $pi;
+
+cx 0; // center x
+cy 0; // center y
+cz 0; // center z
+
+nr      128; // number Radial
+ntheta  128; // number Theta
+g       10;  // grading
+invG    #eval{ 1./$g };
+
+deg 90; // degree arc
+
+
+vertices
+(
+    ( $ri  $cy $cz)  // v0
+    ( $cx  $ri $cz)  // v1
+    (-$ri  $cy $cz)  // v2
+    ( $cx -$ri $cz)  // v3
+    ( $ro  $cy $cz)  // v4
+    ( $cx  $ro $cz)  // v5
+    (-$ro  $cy $cz)  // v6
+    ( $cx -$ro $cz)  // v7
+
+    ( $ri  $cy  $h)  // v8
+    ( $cx  $ri  $h)  // v9
+    (-$ri  $cy  $h)  // v10
+    ( $cx -$ri  $h)  // v11
+    ( $ro  $cy  $h)  // v12
+    ( $cx  $ro  $h)  // v13
+    (-$ro  $cy  $h)  // v14
+    ( $cx -$ro  $h)  // v15
+
+);
+
+blockInfo
+all
+($ntheta $nr 1)
+simpleGrading (1 ((0.5 0.5 $:geom.g)(0.5 0.5 $invG)) 1);
+
+
+blocks
+(
+    hex (1 0 4 5  9  8 12 13) $blockInfo
+    hex (2 1 5 6 10  9 13 14) $blockInfo
+    hex (3 2 6 7 11 10 14 15) $blockInfo
+    hex (0 3 7 4  8 11 15 12) $blockInfo
+);
+
+edges
+(
+    arc 0 1    $deg (0 0 1) // 90 degrees, z-normal
+    arc 1 2    $deg (0 0 1) // 90 degrees, z-normal
+    arc 2 3    $deg (0 0 1) // 90 degrees, z-normal
+    arc 3 0    $deg (0 0 1) // 90 degrees, z-normal
+    arc 8 9    $deg (0 0 1) // 90 degrees, z-normal
+    arc 9 10   $deg (0 0 1) // 90 degrees, z-normal
+    arc 10 11  $deg (0 0 1) // 90 degrees, z-normal
+    arc 11 8   $deg (0 0 1) // 90 degrees, z-normal
+
+    arc 4 5    $deg (0 0 1) // 90 degrees, z-normal
+    arc 5 6    $deg (0 0 1) // 90 degrees, z-normal
+    arc 6 7    $deg (0 0 1) // 90 degrees, z-normal
+    arc 7 4    $deg (0 0 1) // 90 degrees, z-normal
+    arc 12 13  $deg (0 0 1) // 90 degrees, z-normal
+    arc 13 14  $deg (0 0 1) // 90 degrees, z-normal
+    arc 14 15  $deg (0 0 1) // 90 degrees, z-normal
+    arc 15 12  $deg (0 0 1) // 90 degrees, z-normal
+);
+
+
+boundary
+(
+
+    innerWall
+    {
+        type            rotatingWallVelocity;
+        origin          (0 0 0);
+        axis            (0 0 1);
+        omega           30.0; // 600 RPM,   (RPM/60)*2*PI=rPs
+        faces
+        (
+            (1 0  8  9)
+            (2 1  9 10)
+            (3 2 10 11)
+            (0 3 11 8)
+        );
+    }    
+ 
+    outerWall
+    {
+        type wall;
+        faces
+        (
+            (5 13 12 4)
+            (6 14 13 5)
+            (7 15 14 6)
+            (4 12 15 7)
+        );
+    }    
+
+    frontAndBack
+    {
+        type empty;
+        faces
+        (
+            (1 0 4 5)  
+            (2 1 5 6)  
+            (3 2 6 7)  
+            (0 3 7 4)
+
+            ( 9  8 12 13)
+            (10  9 13 14)
+            (11 10 14 15)
+            ( 8 11 15 12)
+
+        );
+    }
+
+    front
+    {
+        type cyclic;
+        neighbourPatch back;
+        faces
+        (
+            (1 0 4 5)  
+            (2 1 5 6)  
+            (3 2 6 7)  
+            (0 3 7 4)
+        );
+    }
+
+    back
+    {
+        type cyclic;
+        neighbourPatch front;
+        faces
+        (
+            ( 9  8 12 13)
+            (10  9 13 14)
+            (11 10 14 15)
+            ( 8 11 15 12)
+        );
+    }
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //
