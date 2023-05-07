@@ -1,5 +1,6 @@
 # Prerequisites
 *.d
+.DS_Store
 
 # Compiled Object files
 *.slo
@@ -30,3 +31,13 @@
 *.exe
 *.out
 *.app
+
+# OpenFoam files
+*/mesh.foam
+
+# OpenFoam directories
+*/postProcessing
+*/dynamicCode
+*/processor*
+*/VTK
+*/constant/polyMesh
